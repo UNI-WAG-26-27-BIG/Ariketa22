@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAW klasea - Formularioak eta JavaScript</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .main-container {
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 20px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
+        }
+        h1 { font-size: 24px; margin-bottom: 5px; }
+        h2 { font-size: 18px; color: #444; margin-top: 0; margin-bottom: 20px; }
+        
+        .content-flex {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        
+        form {
+            border: 2px solid #333;
+            padding: 20px;
+            background-color: #eee;
+            flex: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .form-group label {
+            width: 120px;
+            font-weight: bold;
+        }
+        .form-group input[type="text"], .form-group select {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #999;
+        }
+        .radio-group, .checkbox-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .buttons-container {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        button {
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+
+        /* Eskuineko kaxa datuak erakusteko */
+        .result-box {
+            border: 2px solid #333;
+            background-color: #eee;
+            width: 300px;
+            min-height: 250px;
+            padding: 15px;
+        }
+        .result-box h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+        .result-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>DAW klasea</h1>
+        <h2>Formularioak eta JavaScript</h2>
+
+        <div class="content-flex">
+            <form data-form="user-info">
+                <div class="form-group">
+                    <label>Zuzentzeko era</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="era" value="Jauna" checked> Jauna</label>
+                        <label><input type="radio" name="era" value="Anderea"> Anderea</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="izena">Izena</label>
+                    <input type="text" id="izena" data-input="izena" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="abizena">Abizena</label>
+                    <input type="text" id="abizena" data-input="abizena" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="helbidea">Helbidea</label>
+                    <input type="text" id="helbidea" data-input="helbidea" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="hiria">Hiria</label>
+                    <select id="hiria" data-input="hiria" required>
+                        <option value="">Aukeratu</option>
+                        <option value="Bilbo">Bilbo</option>
+                        <option value="Donostia">Donostia</option>
+                        <option value="Gasteiz">Gasteiz</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Gustokoena</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="gustokoa" value="Liburuak" data-check="liburuak"> Liburuak</label>
+                        <label><input type="checkbox" name="gustokoa" value="Pelikulak" data-check="pelikulak"> Pelikulak</label>
+                    </div>
+                </div>
+
+                <div class="buttons-container">
+                    <button type="submit">Bidali</button>
+                    <button type="reset" data-action="clear">Ezeztatu</button>
+                </div>
+            </form>
+
+            <div class="result-box">
+                <h3>Sartu dituzun datuak:</h3>
+                <div data-display="output"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elementuak hautatu data-atributuen bidez
+        const formularioa = document.querySelector('[data-form="user-info"]');
+        const outputKaxa = document.querySelector('[data-display="output"]');
+        const garbituBotoia = document.querySelector('[data-action="clear"]');
+
+        // Formularioaren bidalketa (submit) kontrolatu
+        formularioa.addEventListener('submit', (event) => {
+            event.preventDefault(); // Orria berritzeko joera saihestu
+
+            // Balioak jaso gaur egungo hautatzaileen bidez
+            const era = document.querySelector('input[name="era"]:checked').value;
+            const izena = document.querySelector('[data-input="izena"]').value;
+            const abizena = document.querySelector('[data-input="abizena"]').value;
+            const helbidea = document.querySelector('[data-input="helbidea"]').value;
+            const hiria = document.querySelector('[data-input="hiria"]').value;
+
+            // Checkboxak kudeatu (hautatuta daudenak array batean gorde eta testu bihurtu)
+            const gustokoak = [];
+            document.querySelectorAll('input[name="gustokoa"]:checked').forEach(cb => {
+                gustokoak.push(cb.value);
+            });
+            const gustokoakTestua = gustokoak.length > 0 ? gustokoak.join(', ') : 'Inor ez';
+
+            // Lehenik emaitza kaxa hustu egiten dugu aurreko datuak borratzeko
+            outputKaxa.innerHTML = '';
+
+            // HTML egitura berria sortu Backtick bidez
+            const htmlEmaitza = `
+                <div class="result-item"><strong>Zuzentzeko era:</strong> ${era}</div>
+                <div class="result-item"><strong>Izena:</strong> ${izena}</div>
+                <div class="result-item"><strong>Abizena:</strong> ${abizena}</div>
+                <div class="result-item"><strong>Helbidea:</strong> ${helbidea}</div>
+                <div class="result-item"><strong>Hiria:</strong> ${hiria}</div>
+                <div class="result-item"><strong>Gustokoena:</strong> ${gustokoakTestua}</div>
+            `;
+
+            // Txertatu datuak modu profesionalean insertAdjacentHTML erabiliz
+            outputKaxa.insertAdjacentHTML('afterbegin', htmlEmaitza);
+        });
+
+        // "Ezeztatu" (Reset) botoian klik egitean eskuineko kaxa ere garbitzeko ekintza
+        garbituBotoia.addEventListener('click', () => {
+            outputKaxa.innerHTML = '';
+        });
+    </script>
+
+</body>
+</html>
